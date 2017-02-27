@@ -229,25 +229,15 @@ class Message
         /* First load the message overview information */
         $messageOverview = $this->getOverview();
 
-        if (!is_object($messageOverview) || empty($messageOverview)) {
-            return false;
-        }
-
-        if (!empty($messageOverview->subject)) {
-            $this->subject = MIME::decode($messageOverview->subject, self::$charset);
-        } else {
-            $this->subject = '';
-        }
-
-        $this->date    = strtotime($messageOverview->date);
-        $this->size    = $messageOverview->size;
+        $this->subject = $messageOverview->offsetGet('subject');
+        $this->date    = $messageOverview->offsetGet('date');
+        $this->size    = $messageOverview->offsetGet('size');
 
         foreach (self::$flagTypes as $flag) {
-            $this->status[$flag] = (isset($messageOverview->$flag) && $messageOverview->$flag == 1);
+            $this->status[$flag] = $messageOverview->offsetExists($flag) && $messageOverview->offsetGet($flag) == 1;
         }
 
         /* Next load in all of the header information */
-
         $headers = $this->getHeaders();
 
         if (isset($headers->to))
@@ -287,22 +277,12 @@ class Message
      * results are only retrieved from the server once unless passed true as a parameter.
      *
      * @param  bool $forceReload
-     * @return \stdClass
+     * @return MessageOverview
      */
     public function getOverview($forceReload = false)
     {
-        if ($forceReload || !isset($this->messageOverview)) {
-            // returns an array, and since we just want one message we can grab the only result
-            $results = imap_fetch_overview($this->imapStream, $this->uid, FT_UID);
-            if (!is_array($results) || empty($results)) {
-                $this->messageOverview = new \stdClass();
-            } else {
-                $this->messageOverview = array_shift($results);
-            }
-
-            if (!isset($this->messageOverview->date)) {
-                $this->messageOverview->date = null;
-            }
+        if ($forceReload || !$this->messageOverview) {
+            $this->messageOverview = new MessageOverview($this->imapConnection, $this->uid, self::$charset);
         }
 
         return $this->messageOverview;
