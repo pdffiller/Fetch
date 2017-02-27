@@ -231,12 +231,18 @@ class Message
             return false;
         }
 
-        $this->subject = MIME::decode($messageOverview->subject, self::$charset);
+        if (!empty($messageOverview->subject)) {
+            $this->subject = MIME::decode($messageOverview->subject, self::$charset);
+        } else {
+            $this->subject = '';
+        }
+
         $this->date    = strtotime($messageOverview->date);
         $this->size    = $messageOverview->size;
 
-        foreach (self::$flagTypes as $flag)
-            $this->status[$flag] = ($messageOverview->$flag == 1);
+        foreach (self::$flagTypes as $flag) {
+            $this->status[$flag] = (isset($messageOverview->$flag) && $messageOverview->$flag == 1);
+        }
 
         /* Next load in all of the header information */
 
