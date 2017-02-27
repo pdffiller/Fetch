@@ -227,7 +227,9 @@ class Message
     protected function loadMessage()
     {
         /* First load the message overview information */
-        if (!is_object($messageOverview = $this->getOverview())) {
+        $messageOverview = $this->getOverview();
+
+        if (!is_object($messageOverview) || empty($messageOverview)) {
             return false;
         }
 
@@ -284,19 +286,21 @@ class Message
      * imap_fetch_overview function, only instead of an array of message overviews only a single result is returned. The
      * results are only retrieved from the server once unless passed true as a parameter.
      *
-     * @param  bool      $forceReload
+     * @param  bool $forceReload
      * @return \stdClass
      */
     public function getOverview($forceReload = false)
     {
         if ($forceReload || !isset($this->messageOverview)) {
             // returns an array, and since we just want one message we can grab the only result
-            $results               = imap_fetch_overview($this->imapStream, $this->uid, FT_UID);
-            if ( sizeof($results) == 0 ) {
-                throw new \RuntimeException('Error fetching overview');
+            $results = imap_fetch_overview($this->imapStream, $this->uid, FT_UID);
+            if (!is_array($results) || empty($results)) {
+                $this->messageOverview = new \stdClass();
+            } else {
+                $this->messageOverview = array_shift($results);
             }
-            $this->messageOverview = array_shift($results);
-            if ( ! isset($this->messageOverview->date)) {
+
+            if (!isset($this->messageOverview->date)) {
                 $this->messageOverview->date = null;
             }
         }
