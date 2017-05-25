@@ -28,9 +28,9 @@ backwards compatible.
         "type": "vcs",
         "url": "git@github.com:pdffiller/pdffiller/Fetch.git"
     }
-]
+],
 "require": {
-  "tedivm/fetch": "^0.8"
+    "tedivm/fetch": "^0.8"
 }
 ```
 
