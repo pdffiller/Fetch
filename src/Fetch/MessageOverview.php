@@ -12,7 +12,7 @@ class MessageOverview extends ArrayObject
     {
         $imapStream = $server->getImapStream();
 
-        if (is_resource($imapStream)) {
+        if (!is_resource($imapStream)) {
             throw new InvalidStreamException(
                 "Unable to get message overview. The IMAP stream is not initialized."
             );
