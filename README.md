@@ -26,7 +26,7 @@ backwards compatible.
 "repositories": [
     {
         "type": "vcs",
-        "url": "git@github.com:pdffiller/pdffiller/Fetch.git"
+        "url": "git@github.com:pdffiller/Fetch.git"
     }
 ],
 "require": {
