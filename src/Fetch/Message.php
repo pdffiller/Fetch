@@ -202,6 +202,11 @@ class Message
     const FLAG_DRAFT = 'draft';
 
     /**
+     * iconv() function charset ignore constant
+     */
+    const CHARSET_FLAG_IGNORE = '//IGNORE';
+
+    /**
      * This constructor takes in the uid for the message and the Imap class representing the mailbox the
      * message should be opened from. This constructor should generally not be called directly, but rather retrieved
      * through the appropriate Imap functions.
@@ -662,7 +667,7 @@ class Message
                     $currentAddress = array();
                     $currentAddress['address'] = $address->mailbox . '@' . $address->host;
                     if (isset($address->personal)) {
-                        $currentAddress['name'] = MIME::decode($address->personal, self::$charset . self::$charsetFlag);
+                        $currentAddress['name'] = MIME::decode($address->personal, self::$charset . self::CHARSET_FLAG_IGNORE);
                     }
                     $outputAddresses[] = $currentAddress;
                 }
