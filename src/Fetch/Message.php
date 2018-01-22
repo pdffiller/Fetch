@@ -662,7 +662,7 @@ class Message
                     $currentAddress = array();
                     $currentAddress['address'] = $address->mailbox . '@' . $address->host;
                     if (isset($address->personal)) {
-                        $currentAddress['name'] = MIME::decode($address->personal, self::$charset);
+                        $currentAddress['name'] = MIME::decode($address->personal, self::$charset . self::$charsetFlag);
                     }
                     $outputAddresses[] = $currentAddress;
                 }
