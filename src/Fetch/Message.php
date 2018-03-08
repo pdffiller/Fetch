@@ -11,6 +11,8 @@
 
 namespace Fetch;
 
+use Fetch\Exception\InvalidMessageStructureException;
+
 /**
  * This library is a wrapper around the Imap library functions included in php. This class represents a single email
  * message as retrieved from the Imap.
@@ -213,6 +215,7 @@ class Message
      *
      * @param int    $messageUniqueId
      * @param Server $connection
+     * @throws \RuntimeException|InvalidMessageStructureException
      */
     public function __construct($messageUniqueId, Server $connection)
     {
@@ -220,14 +223,18 @@ class Message
         $this->mailbox        = $connection->getMailBox();
         $this->uid            = $messageUniqueId;
         $this->imapStream     = $this->imapConnection->getImapStream();
+
         if ($this->loadMessage() !== true)
             throw new \RuntimeException('Message with ID ' . $messageUniqueId . ' not found.');
     }
 
     /**
-     * This function is called when the message class is loaded. It loads general information about the message from the
-     * imap server.
+     * This function is called when the message class is loaded.
      *
+     * It loads general information about the message from the imap server.
+     *
+     * @return boolean
+     * @throws InvalidMessageStructureException
      */
     protected function loadMessage()
     {
@@ -347,11 +354,31 @@ class Message
      *
      * @param  bool      $forceReload
      * @return \stdClass
+     * @throws InvalidMessageStructureException
      */
     public function getStructure($forceReload = false)
     {
         if ($forceReload || !isset($this->structure)) {
-            $this->structure = imap_fetchstructure($this->imapStream, $this->uid, FT_UID);
+
+            /**
+             * FIXME: Make it better.
+             * Avoid "imap_fetchstructure(): No body information available"
+             *
+             * @link https://bugs.php.net/bug.php?id=39375
+             *
+             * PHP IMAP source has such a code:
+             * <code>
+             * php_error_docref(NULL, E_WARNING, "No body information available");
+             * RETURN_FALSE;
+             * </code>
+             *
+             * Thus structure is boolean "false" here
+             */
+            $this->structure = @imap_fetchstructure($this->imapStream, $this->uid, FT_UID);
+
+            if (empty($this->structure)) {
+                throw new InvalidMessageStructureException($this->uid);
+            }
         }
 
         return $this->structure;
