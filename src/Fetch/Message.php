@@ -661,17 +661,32 @@ class Message
     protected function processAddressObject($addresses)
     {
         $outputAddresses = array();
-        if (is_array($addresses))
-            foreach ($addresses as $address) {
-                if (property_exists($address, 'mailbox') && $address->mailbox != 'undisclosed-recipients') {
-                    $currentAddress = array();
-                    $currentAddress['address'] = $address->mailbox . '@' . $address->host;
-                    if (isset($address->personal)) {
-                        $currentAddress['name'] = MIME::decode($address->personal, self::$charset . self::CHARSET_FLAG_IGNORE);
-                    }
-                    $outputAddresses[] = $currentAddress;
-                }
+
+        if (!is_array($addresses)) {
+            return $outputAddresses;
+        }
+
+        foreach ($addresses as $address) {
+            // TODO: Please refactor this to use an object with getters
+            if (!is_object($address) ||
+                !isset($address->mailbox) ||
+                !isset($address->host) ||
+                $address->mailbox == 'undisclosed-recipients'
+            ) {
+                continue;
             }
+
+            $currentAddress = array();
+            $currentAddress['address'] = $address->mailbox . '@' . $address->host;
+
+            if (isset($address->personal)) {
+                $charset = self::$charset . self::CHARSET_FLAG_IGNORE;
+                $currentAddress['name'] = MIME::decode($address->personal, $charset);
+            }
+
+            $outputAddresses[] = $currentAddress;
+        }
+
 
         return $outputAddresses;
     }
