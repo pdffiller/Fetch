@@ -1,27 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<phpunit backupGlobals="false"
-         backupStaticAttributes="false"
-         colors="true"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         processIsolation="false"
-         stopOnFailure="false"
-         syntaxCheck="false"
-         bootstrap="tests/bootstrap.php"
+<phpunit
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+	bootstrap="./vendor/autoload.php"
+	colors="true"
+	verbose="true"
+	columns="max"
+	beStrictAboutResourceUsageDuringSmallTests="true"
+	beStrictAboutChangesToGlobalState="true"
 >
-    <testsuites>
-        <testsuite name="Fetch Test Suite">
-            <directory>./tests/Fetch</directory>
-        </testsuite>
-    </testsuites>
-    <filter>
-        <whitelist>
-            <directory suffix=".php">./src/Fetch/</directory>
-        </whitelist>
-    </filter>
-    <logging>
-        <log type="coverage-text" target="php://stdout" showUncoveredFiles="false"/>
-    </logging>
+	<testsuites>
+		<testsuite name="Fetch Test Suite">
+			<directory suffix=".php">./tests/Fetch</directory>
+		</testsuite>
+	</testsuites>
+
+	<filter>
+		<whitelist>
+			<directory suffix=".php">src</directory>
+		</whitelist>
+	</filter>
+
+	<php>
+		<ini name="date.timezone" value="UTC" />
+		<ini name="display_errors" value="on" />
+		<ini name="display_startup_errors" value="on" />
+		<env name="TEST_USER" value="testuser" />
+		<env name="TEST_PASSWORD" value="applesauce" />
+		<env name="TESTING_SERVER_HOST" value="127.0.0.1" />
+		<env name="TESTING_SERVER_PORT" value="143" />
+	</php>
+
+	<logging>
+		<log
+			type="coverage-text"
+			target="php://stdout"
+			lowUpperBound="60"
+			highLowerBound="90" />
+
+		<log
+			type="coverage-clover"
+			target="build/coverage.xml" />
+	</logging>
 </phpunit>
