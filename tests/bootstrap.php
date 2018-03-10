@@ -10,20 +10,12 @@
  */
 
 error_reporting(-1);
+date_default_timezone_set('UTC');
 
 define('TESTING', true);
 define('TEST_USER', 'testuser');
 define('TEST_PASSWORD', 'applesauce');
-
-date_default_timezone_set('UTC');
-
-if (getenv('TRAVIS')) {
-    define('TESTING_ENVIRONMENT', 'TRAVIS');
-    define('TESTING_SERVER_HOST', '127.0.0.1');
-} else {
-    define('TESTING_ENVIRONMENT', 'VAGRANT');
-    define('TESTING_SERVER_HOST', '172.31.1.2');
-}
+define('TESTING_SERVER_HOST', '127.0.0.1');
 
 $filename = __DIR__ .'/../vendor/autoload.php';
 
