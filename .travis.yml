@@ -42,6 +42,7 @@ before_script:
     - |
         docker run -d \
             -p 143:143 \
+            -p 993:993 \
             -v $(pwd)/tests/ci/dovecot-users:/opt/dovecot/etc/dovecot/users:ro \
             -v $(pwd)/tests/ci/dovecot-local.conf:/opt/dovecot/etc/dovecot/local.conf:ro \
             pdffiller/dovecot2.3-testing-alpine37

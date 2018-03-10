@@ -2,8 +2,8 @@
 
 namespace Fetch\Test;
 
-use Fetch\Server;
 use PHPUnit\Framework\TestCase;
+use Fetch\Tests\Support\ServerAwareTrait;
 
 /**
  * Fetch\Test\ServerTest
@@ -12,6 +12,8 @@ use PHPUnit\Framework\TestCase;
  */
 class ServerTest extends TestCase
 {
+    use ServerAwareTrait;
+
     /**
      * @test
      * @dataProvider flagsDataProvider
@@ -21,7 +23,7 @@ class ServerTest extends TestCase
      */
     public function shouldSetServerFlags(string $expectedPattern, int $port, array $flags)
     {
-        $server = new Server($_ENV['TESTING_SERVER_HOST'], $port);
+        $server = $this->createServer($port);
 
         foreach ($flags as $flag => $value) {
             $server->setFlag($flag, $value);
@@ -29,6 +31,37 @@ class ServerTest extends TestCase
 
         $expected = str_replace('%host%', $_ENV['TESTING_SERVER_HOST'], $expectedPattern);
         $this->assertSame($expected, $server->getServerString());
+    }
+
+    /** @test */
+    public function shouldOverwriteFlags()
+    {
+        $server = $this->createServer();
+
+        $server->setFlag('TestFlag', 'true');
+        $this->assertAttributeContains('TestFlag=true', 'flags', $server);
+
+        $server->setFlag('TestFlag', 'false');
+        $this->assertAttributeContains('TestFlag=false', 'flags', $server);
+    }
+
+    /**
+     * @test
+     * @dataProvider connectionDataProvider
+     * @param integer $port    To use (needed to test behavior on port 143 and 993 from constructor)
+     * @param array   $flags   To set/unset ($flag => $value)
+     * @param string  $message Assertion message
+     */
+    public function testConnection(int $port, array $flags, string $message)
+    {
+        $server = $this->createServer($port);
+
+        foreach ($flags as $flag => $value) {
+            $server->setFlag($flag, $value);
+        }
+
+        $imapSteam = $server->getImapStream();
+        $this->assertInternalType('resource', $imapSteam, $message);
     }
 
     public function flagsDataProvider()
@@ -47,6 +80,14 @@ class ServerTest extends TestCase
             ['{%host%:100/user=foo}',        100, ['user' => 'foo']               ],
             ['{%host%:100/user=bar}',        100, ['user' => 'bar']               ],
             ['{%host%:100}',                 100, ['user' => false]               ],
+        ];
+    }
+
+    public function connectionDataProvider()
+    {
+        return [
+            [143, [],                          'Connects with default settings.' ],
+            [993, ['novalidate-cert' => true], 'Connects over SSL (self signed).'],
         ];
     }
 }

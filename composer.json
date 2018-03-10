@@ -58,7 +58,8 @@
 
     "autoload-dev": {
         "psr-4": {
-            "Fetch\\Tests\\": "tests/Fetch/"
+            "Fetch\\Tests\\": "tests/Fetch/",
+            "Fetch\\Tests\\Support\\": "tests/Support/"
         }
     }
 }
