@@ -1,17 +1,11 @@
 # Fetch
 
+[![Build Status](https://travis-ci.org/pdffiller/Fetch.svg?branch=master)][:repo:]
+[![Latest Stable Version](https://poser.pugx.org/pdffiller/fetch/v/stable)][:packagist:]
+
 A library focused on reading emails and attachments, primarily using the POP and IMAP protocols.
 
 ## Installing
-
- > N.b. A note on Ubuntu 14.04 (probably other Debian-based / Apt managed
- > systems), the install of php5-imap does not enable the extension for CLI
- > (possibly others as well), which can cause composer to report fetch
- > requires `ext-imap`
-
- ```sh
-sudo ln -s /etc/php5/mods-available/imap.ini /etc/php5/cli/conf.d/30-imap.ini
- ```
 
 ### Composer
 
@@ -22,14 +16,8 @@ review changes before even Minor updates, although bug fixes will always be
 backwards compatible.
 
 ```json
-"repositories": [
-    {
-        "type": "vcs",
-        "url": "git@github.com:pdffiller/Fetch.git"
-    }
-],
 "require": {
-    "tedivm/fetch": "^0.8"
+    "pdffiller/fetch": "^0.8"
 }
 ```
 
@@ -57,6 +45,14 @@ foreach ($messages as $message) {
 
 ## License
 
-Fetch is licensed under the BSD License. See the LICENSE file for details.
+Fetch is is open source software licensed under the MIT License.
+See the [`LICENSE.txt`](LICENSE.txt) file for more.
+
+© 2017-2018 PDFfiller <br>
+© 2009-2017 Robert Hafner <br>
+
+All rights reserved.
 
 [:releases:]: https://github.com/tedious/Fetch/releases
+[:repo:]: https://github.com/pdffiller/Fetch
+[:packagist:]: https://packagist.org/packages/pdffiller/fetch

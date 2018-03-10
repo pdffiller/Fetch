@@ -90,4 +90,28 @@ class ServerTest extends TestCase
             [993, ['novalidate-cert' => true], 'Connects over SSL (self signed).'],
         ];
     }
+
+    /** @test */
+    public function shouldCountMessages()
+    {
+        $server = $this->createServer();
+
+        $numMessages = $server->numMessages();
+
+        $this->assertEquals($_ENV['NUM_MESSAGES_INBOX'], $numMessages);
+        $this->assertEquals(0, $server->numMessages( 'DOES_NOT_EXIST_'.time()));
+    }
+
+    /** @test */
+    public function shouldGetMessages()
+    {
+        $server = $this->createServer();
+        $messages = $server->getMessages(5);
+
+        $this->assertCount(5, $messages, 'Five messages returned');
+
+        foreach ($messages as $message) {
+            $this->assertInstanceOf('\Fetch\Message', $message, 'Returned values are Messages');
+        }
+    }
 }
