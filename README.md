@@ -1,7 +1,6 @@
 # Fetch
 
-Fetch is a library for reading email and attachments, primarily using the POP
-and IMAP protocols.
+A library focused on reading emails and attachments, primarily using the POP and IMAP protocols.
 
 ## Installing
 

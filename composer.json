@@ -1,8 +1,12 @@
 {
     "name": "pdffiller/fetch",
-    "description": "A PHP IMAP Library",
+    "description": "A library focused on reading emails and attachments, primarily using the POP and IMAP protocols.",
     "keywords": [
+        "gmail",
         "email",
+        "emails",
+        "attachment",
+        "attachments",
         "imap",
         "pop3"
     ],
@@ -21,6 +25,16 @@
             "email": "tedivm@tedivm.com"
         }
     ],
+
+    "conflict": {
+        "tedivm/fetch": "*"
+    },
+
+    "support": {
+        "source": "https://github.com/pdffiller/Fetch",
+        "issues": "https://github.com/pdffiller/Fetch/issues",
+        "docs": "https://github.com/pdffiller/Fetch/content"
+    },
 
     "require": {
         "php": ">=7.0",
