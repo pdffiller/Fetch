@@ -38,12 +38,16 @@ before_install:
     - if [ ! -z "${GH_TOKEN}" ]; then composer config github-oauth.github.com ${GH_TOKEN}; echo "Configured Github token"; fi;
 
 install:
+    - docker pull pdffiller/dovecot2.3-testing-alpine37
     - |
         composer install \
             --prefer-dist \
             --no-ansi \
             --optimize-autoloader \
             --dev
+
+before_script:
+    - docker run -d -p 143:143 pdffiller/dovecot2.3-testing-alpine37
 
 script:
     - vendor/bin/phpunit --disallow-test-output
