@@ -17,14 +17,6 @@ matrix:
 git:
     depth: 1
 
-env:
-    global:
-        - PATH="$PATH:~/bin"
-        - TEST_USER=testuser
-        - TEST_PASSWORD=applesauce
-        - TESTING_SERVER_HOST=127.0.0.1
-        - TESTING_SERVER_PORT=143
-
 cache:
     apt: true
     ccache: true
@@ -47,7 +39,12 @@ install:
             --dev
 
 before_script:
-    - docker run -d -p 143:143 pdffiller/dovecot2.3-testing-alpine37
+    - |
+        docker run -d \
+            -p 143:143 \
+            -v $(pwd)/tests/ci/dovecot-users:/opt/dovecot/etc/dovecot/users:ro \
+            -v $(pwd)/tests/ci/dovecot-local.conf:/opt/dovecot/etc/dovecot/local.conf:ro \
+            pdffiller/dovecot2.3-testing-alpine37
 
 script:
     - vendor/bin/phpunit --disallow-test-output
