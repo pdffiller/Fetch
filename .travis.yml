@@ -5,14 +5,14 @@ sudo: false
 
 php:
     - 7.0
-#    - 7.1
-#    - 7.2
-#    - nightly
+    - 7.1
+    - 7.2
+    - nightly
 
 matrix:
     fast_finish: true
-#    allow_failures:
-#        - php: nightly
+    allow_failures:
+        - php: nightly
 
 git:
     depth: 1
@@ -30,7 +30,7 @@ before_install:
     - if [ ! -z "${GH_TOKEN}" ]; then composer config github-oauth.github.com ${GH_TOKEN}; echo "Configured Github token"; fi;
 
 install:
-    - docker pull pdffiller/dovecot2.3-testing-alpine37
+    - docker pull pdffiller/dovecot
     - |
         composer install \
             --prefer-dist \
@@ -45,7 +45,10 @@ before_script:
             -p 993:993 \
             -v $(pwd)/tests/ci/dovecot-users:/opt/dovecot/etc/dovecot/users:ro \
             -v $(pwd)/tests/ci/dovecot-local.conf:/opt/dovecot/etc/dovecot/local.conf:ro \
-            pdffiller/dovecot2.3-testing-alpine37
+            -v $(pwd)/tests/ci/00-provision.sh:/entrypoint.d/00-provision.sh:ro \
+            -v $(pwd)/tests/data/Maildir.tar:/data/Maildir.tar:ro \
+            -v $(pwd)/tests/data/Attachments.tar:/data/Attachments.tar:ro \
+            pdffiller/dovecot
 
 script:
     - vendor/bin/phpunit --disallow-test-output
