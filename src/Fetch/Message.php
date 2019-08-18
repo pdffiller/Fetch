@@ -81,12 +81,12 @@ class Message
     /**
      * This is an array of the various imap flags that can be set.
      *
-     * @var string
+     * @var array
      */
     protected static $flagTypes = array(self::FLAG_RECENT, self::FLAG_FLAGGED, self::FLAG_ANSWERED, self::FLAG_DELETED, self::FLAG_SEEN, self::FLAG_DRAFT);
 
     /**
-     * This holds the plantext email message.
+     * This holds the plaintext email message.
      *
      * @var string
      */
@@ -202,12 +202,17 @@ class Message
     const FLAG_DRAFT = 'draft';
 
     /**
+     * iconv() function charset ignore constant
+     */
+    const CHARSET_FLAG_IGNORE = '//IGNORE';
+
+    /**
      * This constructor takes in the uid for the message and the Imap class representing the mailbox the
      * message should be opened from. This constructor should generally not be called directly, but rather retrieved
-     * through the apprioriate Imap functions.
+     * through the appropriate Imap functions.
      *
      * @param int    $messageUniqueId
-     * @param Server $mailbox
+     * @param Server $connection
      */
     public function __construct($messageUniqueId, Server $connection)
     {
@@ -215,7 +220,7 @@ class Message
         $this->mailbox        = $connection->getMailBox();
         $this->uid            = $messageUniqueId;
         $this->imapStream     = $this->imapConnection->getImapStream();
-        if($this->loadMessage() !== true)
+        if ($this->loadMessage() !== true)
             throw new \RuntimeException('Message with ID ' . $messageUniqueId . ' not found.');
     }
 
@@ -226,22 +231,18 @@ class Message
      */
     protected function loadMessage()
     {
-
         /* First load the message overview information */
+        $messageOverview = $this->getOverview();
 
-        if(!is_object($messageOverview = $this->getOverview()))
+        $this->subject = $messageOverview->offsetGet('subject');
+        $this->date    = $messageOverview->offsetGet('date');
+        $this->size    = $messageOverview->offsetGet('size');
 
-            return false;
-
-        $this->subject = MIME::decode($messageOverview->subject, self::$charset);
-        $this->date    = strtotime($messageOverview->date);
-        $this->size    = $messageOverview->size;
-
-        foreach (self::$flagTypes as $flag)
-            $this->status[$flag] = ($messageOverview->$flag == 1);
+        foreach (self::$flagTypes as $flag) {
+            $this->status[$flag] = $messageOverview->offsetExists($flag) && $messageOverview->offsetGet($flag) == 1;
+        }
 
         /* Next load in all of the header information */
-
         $headers = $this->getHeaders();
 
         if (isset($headers->to))
@@ -280,21 +281,13 @@ class Message
      * imap_fetch_overview function, only instead of an array of message overviews only a single result is returned. The
      * results are only retrieved from the server once unless passed true as a parameter.
      *
-     * @param  bool      $forceReload
-     * @return \stdClass
+     * @param  bool $forceReload
+     * @return MessageOverview
      */
     public function getOverview($forceReload = false)
     {
-        if ($forceReload || !isset($this->messageOverview)) {
-            // returns an array, and since we just want one message we can grab the only result
-            $results               = imap_fetch_overview($this->imapStream, $this->uid, FT_UID);
-            if ( sizeof($results) == 0 ) {
-                throw new \RuntimeException('Error fetching overview');
-            }
-            $this->messageOverview = array_shift($results);
-            if ( ! isset($this->messageOverview->date)) {
-                $this->messageOverview->date = null;
-            }
+        if ($forceReload || !$this->messageOverview) {
+            $this->messageOverview = new MessageOverview($this->imapConnection, $this->uid, self::$charset);
         }
 
         return $this->messageOverview;
@@ -348,7 +341,7 @@ class Message
     }
 
     /**
-     * This function returns an object containing the structure of the message body. This is the same object thats
+     * This function returns an object containing the structure of the message body. This is the same object that
      * returned by imap_fetchstructure. The results are only retrieved from the server once unless passed true as a
      * parameter.
      *
@@ -682,17 +675,32 @@ class Message
     protected function processAddressObject($addresses)
     {
         $outputAddresses = array();
-        if (is_array($addresses))
-            foreach ($addresses as $address) {
-                if (property_exists($address, 'mailbox') && $address->mailbox != 'undisclosed-recipients') {
-                    $currentAddress = array();
-                    $currentAddress['address'] = $address->mailbox . '@' . $address->host;
-                    if (isset($address->personal)) {
-                        $currentAddress['name'] = MIME::decode($address->personal, self::$charset);
-                    }
-                    $outputAddresses[] = $currentAddress;
-                }
+
+        if (!is_array($addresses)) {
+            return $outputAddresses;
+        }
+
+        foreach ($addresses as $address) {
+            // TODO: Please refactor this to use an object with getters
+            if (!is_object($address) ||
+                !isset($address->mailbox) ||
+                !isset($address->host) ||
+                $address->mailbox == 'undisclosed-recipients'
+            ) {
+                continue;
             }
+
+            $currentAddress = array();
+            $currentAddress['address'] = $address->mailbox . '@' . $address->host;
+
+            if (isset($address->personal)) {
+                $charset = self::$charset . self::CHARSET_FLAG_IGNORE;
+                $currentAddress['name'] = MIME::decode($address->personal, $charset);
+            }
+
+            $outputAddresses[] = $currentAddress;
+        }
+
 
         return $outputAddresses;
     }

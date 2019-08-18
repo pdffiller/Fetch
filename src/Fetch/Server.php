@@ -117,7 +117,7 @@ class Server
     protected $service = 'imap';
 
     /**
-     * This constructor takes the location and service thats trying to be connected to as its arguments.
+     * This constructor takes the location and service that trying to be connected to as its arguments.
      *
      * @param string      $serverPath
      * @param null|int    $port
@@ -223,7 +223,7 @@ class Server
     }
 
     /**
-     * This funtion is used to set various options for connecting to the server.
+     * This function is used to set various options for connecting to the server.
      *
      * @param  int        $bitmask
      * @throws \Exception
@@ -254,15 +254,16 @@ class Server
      */
     public function getImapStream()
     {
-        if (empty($this->imapStream))
+        if (!is_resource($this->imapStream)) {
             $this->setImapStream();
+        }
 
         return $this->imapStream;
     }
 
     /**
      * This function takes in all of the connection date (server, port, service, flags, mailbox) and creates the string
-     * thats passed to the imap_open function.
+     * that passed to the imap_open function.
      *
      * @return string
      */
@@ -303,10 +304,11 @@ class Server
     /**
      * This function creates or reopens an imapStream when called.
      *
+     * @throws \RuntimeException
      */
     protected function setImapStream()
     {
-        if (!empty($this->imapStream)) {
+        if (is_resource($this->imapStream)) {
             if (!imap_reopen($this->imapStream, $this->getServerString(), $this->options, 1))
                 throw new \RuntimeException(imap_last_error());
         } else {
@@ -431,7 +433,7 @@ class Server
     public function getMessageByUid($uid)
     {
         try {
-            $message = new \Fetch\Message($uid, $this);
+            $message = new Message($uid, $this);
 
             return $message;
         } catch (\Exception $e) {
