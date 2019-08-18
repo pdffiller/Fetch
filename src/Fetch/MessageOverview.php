@@ -37,7 +37,7 @@ class MessageOverview extends ArrayObject
         if (empty($overview->date)) {
             $overview->date = null;
         } else {
-            $overview->date = strtotime($overview->date);
+            $overview->date = Message::parseDate($overview->date);
         }
 
         if (!empty($overview->subject)) {
